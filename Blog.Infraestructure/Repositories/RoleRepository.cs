@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Blog.Application.Interfaces;
 using Blog.Infraestructure.Context;
 using Blog.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Blog.Infraestructure.Repositories;
 
@@ -13,28 +14,42 @@ public class RoleRepository : Repository, IRoleRepository
     public RoleRepository(DatabaseContext context) : base(context)
     {
     }
-    public Task<Role> AddAsync(Role role)
+    public async Task<Role?> AddAsync(Role role)
     {
-        throw new NotImplementedException();
+        await _context.Roles.AddAsync(role);
+        await _context.SaveChangesAsync();
+
+        var roleModel = await _context.Roles.FirstOrDefaultAsync(r => r.Name == role.Name);
+
+        return roleModel;
     }
 
-    public Task<bool> Exists(Role role)
+    public async Task<bool> Exists(Role role)
     {
-        throw new NotImplementedException();
+        var roleModel = await _context.Roles.FirstOrDefaultAsync(r => r.Name == role.Name);
+
+        return roleModel != null;
     }
 
-    public Task<IEnumerable<Role>> GetAllAsync()
+    public async Task<IEnumerable<Role>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await _context.Roles.ToListAsync();
     }
 
-    public Task<Role> GetByIdAsync(int id)
+    public async Task<Role?> GetByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        return await _context.Roles.FindAsync(id);
     }
 
-    public Task<Role> RemoveAsync(int id)
+    public async Task<bool> RemoveAsync(int id)
     {
-        throw new NotImplementedException();
+        var role = await _context.Roles.FindAsync(id);
+
+        if (role == null)
+            return false;
+        
+        _context.Roles.Remove(role);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

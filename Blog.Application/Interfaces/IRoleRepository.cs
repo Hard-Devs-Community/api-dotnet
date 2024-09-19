@@ -9,8 +9,8 @@ namespace Blog.Application.Interfaces;
 public interface IRoleRepository
 {
     Task<IEnumerable<Role>> GetAllAsync();
-    Task<Role> GetByIdAsync(int id);
-    Task<Role> AddAsync(Role role);
-    Task<Role> RemoveAsync(int id);
+    Task<Role?> GetByIdAsync(int id);
+    Task<Role?> AddAsync(Role role);
+    Task<bool> RemoveAsync(int id);
     Task<bool> Exists(Role role);
 }
