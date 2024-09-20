@@ -4,33 +4,55 @@ using System.Linq;
 using System.Threading.Tasks;
 using Blog.Application.Interfaces;
 using Blog.Domain.Entities;
+using Blog.Infraestructure.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Blog.Infraestructure.Repositories;
 
 public class TagRepository : ITagRepository
 {
-    public Task<Tag> AddAsync(Tag tag)
+    private readonly DatabaseContext _context;
+
+    public TagRepository(DatabaseContext context)
     {
-        throw new NotImplementedException();
+        _context = context;
+    }
+    public async Task<Tag?> AddAsync(Tag tag)
+    {
+        Tag? tagModel = await _context.Tags.FirstOrDefaultAsync(t => t.Name == tag.Name);
+        if (tagModel == null)
+            return null;
+
+        await _context.Tags.AddAsync(tag);
+        await _context.SaveChangesAsync();
+
+        return await _context.Tags.FirstOrDefaultAsync(t => t.Name == tag.Name);
     }
 
-    public Task<IList<Tag>> GetAllAsync()
+    public async Task<IList<Tag>> GetAllAsync()
     {
-        throw new NotImplementedException();
+        return await _context.Tags.ToListAsync();
     }
 
-    public Task<Tag> GetById(int id)
+    public async Task<Tag?> GetById(int id)
     {
-        throw new NotImplementedException();
+        return await _context.Tags.FindAsync(id);
     }
 
-    public Task<IEnumerable<Tag>> GetByVacantIdAsync(int vacantId)
+    public async Task<IEnumerable<Tag>> GetByVacantIdAsync(int vacantId)
     {
-        throw new NotImplementedException();
+        var filteredTags = _context.Tags.Where(t => t.VacantId == vacantId);
+        return await filteredTags.ToListAsync();
     }
 
-    public Task<Tag> RemoveAsync(int id)
+    public async Task<bool> RemoveAsync(int id)
     {
-        throw new NotImplementedException();
+        var task = await _context.Tags.FindAsync(id);
+        if (task == null)
+            return false;
+
+        _context.Tags.Remove(task);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }
